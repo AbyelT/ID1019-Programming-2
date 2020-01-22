@@ -34,10 +34,23 @@ IO.puts "hi there"
           n*power(n,m-1)
         m < 0 ->
           div(1,(n * power(n,m+1)))
-        true -> IO.puts "error"
         end
     end
-    
+
+    @doc "qpower computes the power of an non-negative number n and
+    its exponent e through the div, rem and prod functions
+    "
+    def qpower(n,0) do 1 end
+    def qpower(0,e) do 0 end
+    def qpower(n,1) do n end
+    def qpower(n,e) do
+      cond do
+        rem(e,2) == 0 -> qpower(n,div(e,2)) * qpower(n,div(e,2))
+        rem(e,2) == 1 -> qpower(n,div(e-1,2)) * qpower(n,div(e+1,2))
+        true -> 0
+      end
+    end
+
     @doc "runs the fibonacci sequence"
     def fib(n) do
       cond do

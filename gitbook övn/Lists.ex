@@ -2,14 +2,14 @@ defmodule Lists do
     @doc "returns the head of a list
      "
     def tak([]) do IO.puts "empty list" end
-    def tak([h|t]) do
+    def tak([h|_t]) do
         h
     end
 
     @doc "Returns the tail of a list
      "
     def drp([]) do IO.puts "empty list" end
-    def drp([h|t]) do
+    def drp([h|_t]) do
         t            
     end
 
@@ -17,24 +17,23 @@ defmodule Lists do
      "
     def len([]) do 0 end
     def len(l) do
-         1 + len(tl(l))   
+        1 + len(tl(l))   
     end
 
     @doc "Returns the sum of all the elements in 
      a list, assume that all elements are Integers
      "
+    def sum([]) do 0 end
     def sum(l) do
-        cond do
-            l == [] -> 0
-            l != [] -> _n = hd(l) + sum(tl(l)) 
-        end
+        hd(l) + sum(tl(l)) 
     end
 
      @doc "duplicates every element on a given list, if it's not empty
      "
     def duplicate([]) do [] end
     def duplicate(l) do
-        [hd(l),hd(l)|duplicate(tl(l))]
+        [hd(l), hd(l)|duplicate(tl(l))]
+        [l|l]
     end
 
     @doc "Adds a given element to the list, if its not on the list
@@ -64,7 +63,10 @@ defmodule Lists do
 
     @doc "appends two lists into one list
      (links the first list to the second list)"
-    def append(l1, l2) do l1 ++ l2 end
+    def append([], l2) do  l2 end
+    def append([h|t], l2) do 
+        [h|append(t, l2)]
+    end
 
     @doc "returns a reverse instance of the given list"
     def reverse([]) do [] end
