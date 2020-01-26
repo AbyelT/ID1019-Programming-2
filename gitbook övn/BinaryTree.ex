@@ -19,7 +19,9 @@ defmodule BinaryTree do
     tree with the given element inserted onto the right place in the 
     new tree"
     def insert(e, :nil)  do  {:leaf, e}  end
-    def insert(e, {:leaf, v}) when e < v do insert(e, :nil) end
+    def insert(e, {:leaf, v}) when e < v do 
+        {:node, v, insert(e, :nil), :nil} 
+    end
     def insert(e, {:leaf, v}) do {:node, v, :nil, insert(e, :nil)} end
     def insert(e, {:node, v, left, right}) when e < v do
         {:node, v ,insert(e, left), right}
