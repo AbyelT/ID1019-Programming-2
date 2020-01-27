@@ -8,7 +8,7 @@ defmodule Huffman do
     end
 
     def text() do
-        "this is something that we should encode"
+        'this is something that we should encode'
     end
 
     def test do
@@ -94,12 +94,18 @@ defmodule Huffman do
 
     @doc "returns a list of tuples containing a character and its frequency 
     in the given text."
-    def freq(sample) do freq(String.codepoints(sample), []) end
+    def freq(sample) do freq(String.codepoints(sample), []) end  
     def freq([], freq) do freq end
     def freq([char|rest], freq) do
-        cond do 
-            Enum.member?(Enum.reduce(freq, [], fn {x, y}, acc -> [x|acc] end), char) -> freq(rest, freq)
-            true -> freq(rest, [{char, 1+Enum.count(rest, fn x -> char == x end)} | freq])
+        freq(rest, addFreq(char, freq))
+    end
+
+    def addFreq(char, []) do [{char, 1}] end
+    def addFreq(char, [hd|tl]) do 
+        {fChar, fVal} = hd
+        cond do
+            char == fChar -> [{char, fVal + 1} | tl]
+            true -> [hd|addFreq(char, tl)]
         end
     end
 
@@ -129,3 +135,11 @@ defmodule Huffman do
         reverse(t, [h|r]) 
     end
 end
+
+ @doc "
+    def freq([char|rest], freq) do
+        cond do 
+            Enum.member?(Enum.reduce(freq, [], fn {x, y}, acc -> [x|acc] end), char) -> freq(rest, freq)
+            true -> freq(rest, [{char, 1+Enum.count(rest, fn x -> char == x end)} | freq])
+        end
+    end"
