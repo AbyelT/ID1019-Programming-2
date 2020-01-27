@@ -22,7 +22,8 @@ defmodule BinaryTree do
     def insert(e, {:leaf, v}) when e < v do 
         {:node, v, insert(e, :nil), :nil} 
     end
-    def insert(e, {:leaf, v}) do {:node, v, :nil, insert(e, :nil)} end
+    def insert(e, {:leaf, v}) do 
+        {:node, v, :nil, insert(e, :nil)} end
     def insert(e, {:node, v, left, right}) when e < v do
         {:node, v ,insert(e, left), right}
     end
