@@ -11,14 +11,13 @@ defmodule Huffman do
         'this is something that we should encode'
     end
 
-    def test do
-        sample = sample()
+    def test() do
+        sample = text()
         tree = tree(sample)
         encode = encode_table(tree)
-        decode = decode_table(tree)
         text = text()
         seq = encode(text, encode)
-        decode(seq, decode)
+        decode(seq, encode)
     end
 
     @doc "Creates a Huffman tree given a sample text"
@@ -27,86 +26,89 @@ defmodule Huffman do
         huffman(freq)
     end
 
+    @doc "returns a huffman tree given a frequency list"
+    def huffman(freq) do huffman(freq, {}) end
+    def huffman([tree], {}) do tree end
+    @doc "for each recursion: take the two least freq chars"
+    def huffman([l1, l2| rem], {}) do 
+        {_, v1, _, _} = prepareNode(l1)
+        {_, v2, _, _} = prepareNode(l2)
+        a = {:node, v1 + v2, l2, l1}
+        huffman(insrt(a, rem), {})
+    end
+
     @doc "creates an encoding table containging the
     mapping from characters to codes (binary) given a Huffman tree"
-    def encode_table(tree) do eTable(tree, [], []) end    
+    def encode_table(tree) do encode_table(tree, [], []) end
+    @doc "returns an encoding table given a huffman tree, the function
+    uses an accumulator to save the encoding from each char"
+    def encode_table({:node, val, left, right}, binary, accu) do
+        accu=encode_table(left, [0|binary], accu)
+            encode_table(right, [1|binary], accu)
+    end
+    def encode_table({char, freq}, binary, accu) do 
+        [{char, reverse(binary)} | accu]
+    end
 
     @doc "create an decoding table containing the mapping 
     from codes (binary) to characters given a Huffman tree"
     def decode_table(tree) do 
-        #dTable(tree, [], []) 
     end  
 
     @doc "encodes the text, using the mapping in the table
     returns a sequence of bits"
-    def encode(text, table) do encode(String.codepoints(text), table, []) end
-    def encode([], table, accu) do reverse(accu) end
+    def encode(text, table) do encode(text, table, []) end
+    def encode([], table, accu) do flatAndOrder(accu) end
     def encode([hd|tl], table, accu) do
         encode(tl, table, inspect(hd, table, accu))
     end
 
-    @doc "returns the binary code that corresponds to a char from huffman tree"
-    def inspect(char, [hd|tl], accu) do
-        {bChar, binary} = hd
-        cond do
-            char == bChar -> removelist(binary, accu)
-            true -> inspect(char, tl, accu)
-        end
-    end
-
-    @doc "adds the binary code to the accumulator"
-    def removelist([hd|tl], accu) do removelist(tl, [hd|accu]) end
-    def removelist([], accu) do accu end
-
     @doc "decodes the bit sequence using the mapping in
     table, return a text"
-    def decode(seq, tree) do
-        # To implement...
+    def decode([], _)  do []
+    end
+    def decode(seq, table) do
+        {char, rest} = decode_char(seq, 1, table)
+        [char | decode(rest, table)]
     end
 
     @doc "//////////////////////// Helper functions ////////////////////////"
 
-    @doc "returns an encoding table given a huffman tree, the function
-    uses an accumulator to save the encoding from each char"
-    def eTable({:node, left, right}, binary, accu) do
-        accu=eTable(left, [0|binary], accu)
-        accu=eTable(right, [1|binary], accu)
-    end
-    def eTable({char, freq}, binary, accu) do 
-        [{char, binary} | accu]
+    @doc "returns a decoded message from a 
+    given sequence and an encoding table"
+    def decode_char(seq, n, table) do
+        {code, rest} = Enum.split(seq, n)
+        case List.keyfind(table, code, 1) do
+            {char,_} -> {char, rest}
+            nil -> decode_char(seq, n+1, table)
+        end
     end
 
-    @doc "returns a huffman tree given a frequency list"
-    def huffman(freq) do 
-        huffman(iSort(freq), {})
-    end
-    def huffman([_], htree) do htree end
-
-    @doc "for each recursion: take the two least freq chars"
-    def huffman([l1, l2| rem], htree) do 
-        a={{elem(l1, 0), elem(l2, 0)}, elem(l1,1) + elem(l2,1)}
-        cond do
-            is_tuple(elem(l2, 0)) -> huffman(insrt(a, rem), {:node, l1, htree})
-            is_tuple(elem(l1, 0)) -> huffman(insrt(a, rem), {:node, htree, l2})
-            true -> huffman(insrt(a, rem), {:node, l1, l2})
+    @doc "converts an element from the frequency list to a node,
+    if a node is given it is returned"
+    def prepareNode(elem) do
+        case elem do 
+            {c1, v1} -> {c1, v1, :nil, :nil}
+            {_, _, _, _} -> elem            
         end
     end
 
     @doc "returns a list of tuples containing a character and its frequency 
     in the given text."
-    def freq(sample) do freq(String.codepoints(sample), []) end  
-    def freq([], freq) do freq end
+    def freq(sample) do freq(sample, []) end  
+    def freq([], freq) do iSort(freq) end
     def freq([char|rest], freq) do
         freq(rest, addFreq(char, freq))
     end
-
+    
+    @doc "adds a new tuple containing a char and its frequency onto 
+    a list, if a similar char exists in the list."
     def addFreq(char, []) do [{char, 1}] end
-    def addFreq(char, [hd|tl]) do 
-        {fChar, fVal} = hd
-        cond do
-            char == fChar -> [{char, fVal + 1} | tl]
-            true -> [hd|addFreq(char, tl)]
-        end
+    def addFreq(char, [{char, val}|tl]) do 
+       [{char, val + 1} | tl] 
+    end
+    def addFreq(char, [hd|tl]) do
+        [hd|addFreq(char, tl)]
     end
 
     @doc "inserts functions onto ASC order"
@@ -128,18 +130,31 @@ defmodule Huffman do
         end
     end
 
+    @doc "reverses a list"
     def reverse([]) do [] end
     def reverse(l) do reverse(l, []) end
     def reverse([], r) do r end
     def reverse([h|t], r) do 
         reverse(t, [h|r]) 
     end
-end
 
- @doc "
-    def freq([char|rest], freq) do
-        cond do 
-            Enum.member?(Enum.reduce(freq, [], fn {x, y}, acc -> [x|acc] end), char) -> freq(rest, freq)
-            true -> freq(rest, [{char, 1+Enum.count(rest, fn x -> char == x end)} | freq])
-        end
-    end"
+     @doc "returns the binary code that corresponds to a char from huffman tree"
+    def inspect(char, [{char, binary}|tl], accu) do
+        [binary|accu]
+    end
+    def inspect(char, [hd|tl], accu) do
+        inspect(char, tl, accu)
+    end
+
+    @doc "given an list of lists with binary codes, return an 
+    ordered sequence of codes"
+    def flatAndOrder(unsorted) do flatAndOrder(unsorted, []) end
+    def flatAndOrder([], sec) do sec end
+    def flatAndOrder([binary|rest], accu) do
+        flatAndOrder(rest, add(binary, accu))
+    end
+
+    @doc "adds the binary code to the accumulator"
+    def add([hd|tl], accu) do add(tl, [hd|accu]) end
+    def add([], accu) do accu end
+end

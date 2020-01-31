@@ -100,3 +100,20 @@ defmodule BinaryTree do
         {:node, k, v, left, add(key, value, left)}
     end
 end
+
+@doc "
+    def freq([char|rest], freq) do
+        cond do 
+            Enum.member?(Enum.reduce(freq, [], fn {x, y}, acc -> [x|acc] end), char) -> freq(rest, freq)
+            true -> freq(rest, [{char, 1+Enum.count(rest, fn x -> char == x end)} | freq])
+        end
+    end"
+
+    def huffman([l1, l2| rem], htree) do 
+        a={{elem(l1, 0), elem(l2, 0)}, elem(l1,1) + elem(l2,1)}
+        cond do
+            is_tuple(elem(l2, 0)) -> huffman(insrt(a, rem), {:node, l1, htree})
+            is_tuple(elem(l1, 0)) -> huffman(insrt(a, rem), {:node, htree, l2})
+            true -> huffman(insrt(a, rem), {:node, l1, l2})
+        end
+    end
