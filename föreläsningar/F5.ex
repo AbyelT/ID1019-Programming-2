@@ -4,6 +4,13 @@ defmodule F5 do
     @type value :: 2..14
     @type card :: {:card, suite, value}
 
+    @type test() :: atom()
+    @spec 
+
+    def tester(h) do 
+        h
+    end
+
     def simpleRev(l) do simpleRev(l, []) end
     def simpleRev([], accu) do accu end
     def simpleRev([h|t], accu) do
