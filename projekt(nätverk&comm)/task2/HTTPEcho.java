@@ -16,29 +16,35 @@ public class HTTPEcho {
      * @throws IOException
      */
     public static void main(String[] args) throws IOException{
-        
         int portNr = Integer.parseInt(args[0]);
-        ServerSocket server = new ServerSocket(portNr); //create a server socket to port 20
-        StringBuilder sb = new StringBuilder();
+        ServerSocket server = new ServerSocket(portNr);             //create a server socket to port 20
+        System.out.println("Running server, port: " + portNr);
+        StringBuilder sb;
+        String s;
 
         while(true) {
             Socket newClient = server.accept();
             InputStream in = newClient.getInputStream();
+            OutputStream out = newClient.getOutputStream();
 
-            if(in.available() > 0) {
-                InputStreamReader iRead = new InputStreamReader(in);    //used as a bridge between byte-stream and char-streams
-                BufferedReader buff = new BufferedReader(iRead);
-
-                while(buff.ready()) {
-                    sb.append(buff.readLine() + "\n");}
+            sb = new StringBuilder("HTTP/1.1 200 OK\r\n\r\n");
+            InputStreamReader iRead = new InputStreamReader(in);    //used as a bridge between byte-stream and char-streams
+            BufferedReader buff = new BufferedReader(iRead);
             
-                OutputStream out = newClient.getOutputStream();
-                OutputStreamWriter iWrite = new OutputStreamWriter(out);
-                BufferedWriter wuff = new BufferedWriter(iWrite);
-
-                wuff.write(sb.toString());
-                wuff.close();
+            while(!((s = buff.readLine()).equals(""))) {
+                sb.append(s + "\r\n");
+                //System.out.println(s + "row\r");
             }
+                
+            OutputStreamWriter iWrite = new OutputStreamWriter(out);
+            BufferedWriter wuff = new BufferedWriter(iWrite);
+                
+            wuff.write(sb.toString());
+            //wuff.write("hi there");
+            //System.out.print(resp + sb.toString());
+            wuff.close();
+            in.close();
+            out.close();
         }
     }
 }

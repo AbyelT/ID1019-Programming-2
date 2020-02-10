@@ -13,7 +13,9 @@ defmodule Cmplx do
     def add({ar, ai}, {br, bi}) do {ar+br, ai+bi} end
 
     @doc "sqr squares a complex number"
-    def sqr({a, b}) do {a*a, b*b} end
+    def sqr({a, b}) do 
+        {a*a - b*b, (a*b + a*b)} 
+    end
 
     @doc "abs the absolute value of"
     def abs({a, b}) do :math.sqrt((a*a) + (b*b)) end

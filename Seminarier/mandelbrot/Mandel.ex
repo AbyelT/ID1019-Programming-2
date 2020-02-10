@@ -1,7 +1,8 @@
 defmodule Mandel do
     import Cmplx
     
-    @doc "mandelbrot generates "
+    @doc "mandelbrot generates a list of rows containing the color
+    for each pixel, given some values"
     def mandelbrot(width, height, x, y, k, depth) do
         trans = fn(w, h) ->
             Cmplx.new(x + k * (w - 1), y - k * (h - 1))
@@ -9,41 +10,40 @@ defmodule Mandel do
         rows(width, height, trans, depth, [])
     end
 
-    def rows(w, 0, trans, depth, list) do list end
+    @doc "rows returns a list of rows, given the width and height
+    of the image, a function that converts pixel position to 
+    corresponding complex number, the max depth and an empty list"
+    def rows(_, 0, _, _, list) do list end
     def rows(w, h, trans, depth, list) do 
-        row = []
-        for x <- 1..w do
-            point = trans.(w, h);    
-            i = Brot.mandelbrot(point, depth)
-            color = Color.convert(i, depth)
-            row = append(color, row)
-            IO.puts "#{inspect row}"
-            IO.puts x
-        end
+        row = row(w, h, trans, depth, [])
         rows(w, h-1, trans, depth, [row|list])
     end
 
-    def append(r, t) do [r|t] end
-
-    def demo() do
-        small(-2.6, 1.2, 1.2)
-    end
-
-    def small(x0, y0, xn) do
-        width = 10
-        height = 20
-        depth = 64
-        k = (xn - x0) / width
-        image = Mandel.mandelbrot(width, height, x0, y0, k, depth)
-        #PPM.write("small.ppm", image)
-        image
-    end
-
-    @doc "def row(w, h, trans, depth, points) do 
+    @doc "row returns a list of tuples, where each tuple represents
+    the RGB color of a pixel in an image"
+    def row(0, _, _, _, row) do row end
+    def row(w, h, trans, depth, row) do 
         point = trans.(w, h);
         i = Brot.mandelbrot(point, depth)
         color = Color.convert(i, depth)
-        row(w-1, h, trans, depth, [color|points])
+        row(w-1, h, trans, depth, [color|row])
     end
-    def row(0, h, trans, depth, points) do points end"
+
+    @doc "runs a demo of the module, with a given 
+    complex number"
+    def demo() do
+        small(-0.01, 0.69, -0.7)
+    end
+
+    @doc "creates an image representing the depth of 
+    each pixel that exists within the width and height, 
+    given a complex number and a arbitrary value"
+    def small(x0, y0, xn) do
+        width = 1920
+        height = 1080
+        depth = 80
+        k = (xn - x0) / width
+        image = Mandel.mandelbrot(width, height, x0, y0, k, depth)
+        PPM.write("small.ppm", image)
+    end
 end

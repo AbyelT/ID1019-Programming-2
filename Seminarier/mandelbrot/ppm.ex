@@ -1,9 +1,7 @@
 defmodule PPM do
 
-  # write(Name, Image) The image is a list of rows, each row a list of
-  # tuples {R,G,B} where the values are flots from 0 to 1. The image
-  # is written using PMM format P6 and color depth 0-255. This means that
-  # each tuple is written as three bytes.
+  # write(name, image) The image is a list of rows, each row a list of
+  # tuples {R,G,B}. The RGB values are 0-255.
 
   def write(name, image) do
     height = length(image)
@@ -18,16 +16,15 @@ defmodule PPM do
   end
 
   defp rows(rows, fd) do
-    Enum.each(rows, fn r ->
+    Enum.each(rows, fn(r) ->
       colors = row(r)
       IO.write(fd, colors)
     end)
   end
 
   defp row(row) do
-    List.foldr(row, [], fn({r, g, b}, a) ->
-      [trunc(r * 255), trunc(g * 255), trunc(b * 255) | a]
+    List.foldr(row, [], fn({:rgb, r, g, b}, a) ->
+      [r, g, b | a]
     end)
   end
-
 end
