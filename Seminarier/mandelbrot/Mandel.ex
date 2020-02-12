@@ -32,7 +32,7 @@ defmodule Mandel do
     @doc "runs a demo of the module, with a given 
     complex number"
     def demo() do
-        small(-0.01, 0.69, -0.7)
+        small(-0.17, 0.87, -0.10)
     end
 
     @doc "creates an image representing the depth of 
@@ -41,7 +41,7 @@ defmodule Mandel do
     def small(x0, y0, xn) do
         width = 1920
         height = 1080
-        depth = 80
+        depth = 128
         k = (xn - x0) / width
         image = Mandel.mandelbrot(width, height, x0, y0, k, depth)
         PPM.write("small.ppm", image)
