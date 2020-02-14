@@ -31,4 +31,11 @@ defmodule Brot do
             true -> i
         end
     end
+    def test(i, z0, c, m) do
+        a = Cmplx.abs(z0)
+        cond do
+            a >= 2 -> i
+            true -> test(i+1, Cmplx.add(Cmplx.sqr(a), c), c, m)
+        end 
+    end
 end
