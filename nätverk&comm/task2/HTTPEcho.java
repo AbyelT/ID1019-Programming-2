@@ -2,11 +2,9 @@ import java.net.*;
 import java.io.*;
 
 /**
- * HTTPEcho acts as a web-server process that accepts incoming
- * TCP connections, reads data and echoes an HTTP response back
- * the same data that was given.
+ * HTTPEcho acts as a web-server process that accepts incoming TCP connections,
+ * reads data and echoes an HTTP response back the same data that was given.
  */
-
 public class HTTPEcho {
 
     /**
@@ -17,31 +15,28 @@ public class HTTPEcho {
      */
     public static void main(String[] args) throws IOException{
         int portNr = Integer.parseInt(args[0]);
-        ServerSocket server = new ServerSocket(portNr);             //create a server socket to port 20
-        System.out.println("Running server, port: " + portNr);
-        StringBuilder sb;
-        String s;
+        try{
+            ServerSocket server = new ServerSocket(portNr);          //create a server socket to port 20
+            System.out.println("Running server, port: " + portNr);
+            String response;
+            String s;
 
-        while(true) {
-            Socket newClient = server.accept();
-            InputStream in = newClient.getInputStream();
-            OutputStream out = newClient.getOutputStream();
-
-            sb = new StringBuilder("HTTP/1.1 200 OK\r\n\r\n");
-            InputStreamReader iRead = new InputStreamReader(in);    //used as a bridge between byte-stream and char-streams
-            BufferedReader buff = new BufferedReader(iRead);
-            
-            while(!((s = buff.readLine()).equals(""))) {
-                sb.append(s + "\r\n");
+            while(true) {
+                //used as a bridge between byte-stream and char-streams
+                Socket newClient = server.accept(); 
+                BufferedReader buff = new BufferedReader(new InputStreamReader(newClient.getInputStream()));
+                BufferedWriter wuff = new BufferedWriter(new OutputStreamWriter(newClient.getOutputStream()));
+                response = "HTTP/1.1 200 OK\r\n\r\n";
+                while(!((s = buff.readLine()).isEmpty())) {
+                    response += (s + "\r\n");
+                }
+                wuff.write(response, 0, response.length());
+                wuff.close();
+                newClient.close();
             }
-            s = sb.toString().substring(0, sb.length()-1);
-            OutputStreamWriter iWrite = new OutputStreamWriter(out);
-            BufferedWriter wuff = new BufferedWriter(iWrite);
-                
-            wuff.write(s);
-            wuff.close();
-            in.close();
-            out.close();
+        }
+        catch(Exception e){
+            System.out.println("An unexpected error has occured");
         }
     }
 }
