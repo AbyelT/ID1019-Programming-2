@@ -1,5 +1,4 @@
 import java.net.*;
-import java.util.Scanner;
 import java.io.*;
 
 public class HTTPAsk {
@@ -12,12 +11,8 @@ public class HTTPAsk {
 
         while(true) {
             Socket newClient = server.accept();
-            InputStream in = newClient.getInputStream();
-            OutputStream out = newClient.getOutputStream();
-            InputStreamReader iRead = new InputStreamReader(in);    //used as a bridge between byte-stream and char-streams
-            BufferedReader buff = new BufferedReader(iRead);
-            OutputStreamWriter iWrite = new OutputStreamWriter(out);
-            BufferedWriter wuff = new BufferedWriter(iWrite);
+            BufferedReader buff = new BufferedReader(new InputStreamReader(newClient.getInputStream()));
+            BufferedWriter wuff = new BufferedWriter(new OutputStreamWriter(newClient.getOutputStream()));
 
             try{
                 //fetch the given request
@@ -29,8 +24,8 @@ public class HTTPAsk {
                     //extract the hostname, port and if possible the string
                     String sHost = "";
                     int sPort = 0;
-                    String sString = null;
-                    
+                    String sString = null;               
+
                     if(parameters[1].equals("hostname")) 
                         sHost = parameters[2];
                     if(parameters[3].equals("port")) 
@@ -39,17 +34,20 @@ public class HTTPAsk {
                         sString = parameters[6];
 
                     //öppna förbindelse till given hostname, port
-                    String serverOutput = TCPClient.askServer(sHost, sPort, sString);                
+                    String serverOutput = TCPClient.askServer(sHost, sPort, sString);      
+                    System.out.println(serverOutput); 
                     wuff.write(serverOutput);
-                }
-                else 
-                    System.out.println(request);                 
+                } 
             }
-            catch(SocketException e) {
-                wuff.write("404 page not found!");
+            catch(UnknownHostException e) {
+                wuff.write("404 page not found");
             }
-            catch(IOException e) {
-                wuff.write("400 bad syntax!");
+            catch(SocketTimeoutException e) {
+                wuff.write("408 connection timed out");
+            }
+            catch(Exception e) {
+                System.out.println(e);                 
+                wuff.write("400 bad syntax");
             }
             wuff.close();
             in.close();
