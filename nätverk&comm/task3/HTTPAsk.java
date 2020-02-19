@@ -45,13 +45,13 @@ public class HTTPAsk {
             catch(SocketTimeoutException e) {
                 wuff.write("408 connection timed out");
             }
+            catch(SocketException e) {
+                wuff.write("400 bad request");
+            }
             catch(Exception e) {
                 System.out.println(e);                 
-                wuff.write("400 bad syntax");
             }
             wuff.close();
-            in.close();
-            out.close();
         }
     }
 }

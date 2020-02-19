@@ -17,9 +17,9 @@ defmodule Chopstick do
             {:return, from} -> 
                 send(from, :ok)
                 available()
-            {:request, from} ->
-                send(from, :no)
-                gone()
+            #{:request, from} ->
+                #send(from, :no)
+                #gone()
             :quit -> :ok
         end
     end
@@ -28,7 +28,8 @@ defmodule Chopstick do
         send(stick, {:request, self()})
         receive do
             :ok -> :ok
-            :no -> :no
+            after 1500 -> :no
+            #:no -> :no
         end
     end
 
@@ -57,25 +58,33 @@ defmodule Philosopher do
     def dream(hunger, strength, right, left, name, ctrl, seed) do
         sleep(seed) 
         cond do 
-            strength <= 0 -> send(ctrl, :done) #idk what strength is
-            hunger <= 0 -> send(ctrl, :done)
+            strength <= 0 -> 
+                Chopstick.return(right)
+                Chopstick.return(left)
+                IO.puts("#{name} died by hunger")                
+                send(ctrl, :done) 
+            hunger <= 0 -> 
+                IO.puts("#{name} is done eating!")                
+                send(ctrl, :done)
             true -> 
-                waitBoth(hunger, strength, right, left, name, ctrl, seed)
+                waitBoth2(hunger, strength, right, left, name, ctrl, seed)
         end
     end
 
     #make sure to recursively wait for both chpsticks, to save mem space
     def waitBoth(hunger, strength, right, left, name, ctrl, seed) do 
         wait(right)
-        sleep(300) #artificial wait in between chopsticks
+        IO.puts("#{name} took right chopstick")
+        sleep(seed) #artificial wait in between chopsticks
         wait(left)
+        IO.puts("#{name} took left chopstick")
         eating(hunger, strength, right, left, name, ctrl, seed)
     end
 
     def wait(chopstick) do
         case Chopstick.request(chopstick) do
             :no -> 
-                sleep(1000)
+                :timer.sleep(1000)
                 wait(chopstick)
             :ok -> :ok
         end
@@ -86,19 +95,21 @@ defmodule Philosopher do
             :no -> 
                 dream(hunger, strength, right, left, name, ctrl, seed)
             :ok -> 
-                sleep(seed) #artificial wait time
+                IO.puts("#{name} took left chopstick")
+                :timer.sleep(200)     #artificial wait time
                 case Chopstick.request(right) do
-                        :no -> 
-                            Chopstick.return(left)
-                            dream(hunger, strength, right, left, name, ctrl, seed)
-                        :ok -> 
-                            eating(hunger, strength, right, left, name, ctrl, seed)
-                    end
+                    :no -> 
+                        Chopstick.return(left)
+                        dream(hunger, strength, right, left, name, ctrl, seed)
+                    :ok -> 
+                        IO.puts("#{name} took right chopstick")
+                        eating(hunger, strength, right, left, name, ctrl, seed)
+                end
         end
     end
 
     def eating(hunger, strength, right, left, name, ctrl, seed) do 
-        :timer.sleep(2500) #artificial eating time
+        :timer.sleep(1500) #artificial eating time
         Chopstick.return(right)
         Chopstick.return(left)
         IO.puts("#{name} ate a bowl of noodles, #{hunger-1} left!")
@@ -132,7 +143,6 @@ defmodule Dinner do
     def wait(n, chopsticks) do
         receive do
             :done -> 
-                IO.puts("#{n-1} philosophers left")
                 wait(n - 1, chopsticks)
             :abort -> Process.exit(self(), :kill)
         end

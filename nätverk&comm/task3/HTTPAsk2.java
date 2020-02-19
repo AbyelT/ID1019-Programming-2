@@ -26,18 +26,19 @@ public class HTTPAsk2 {
                     wuff.write(serverOutput);
                 }
             } 
-            catch (UnknownHostException e) {
+            catch(UnknownHostException e) {
                 wuff.write("404 page not found");
-            } 
-            catch (SocketTimeoutException e) {
+            }
+            catch(SocketTimeoutException e) {
                 wuff.write("408 connection timed out");
-            } 
-            catch (Exception e) {
-                wuff.write("400 bad syntax");
+            }
+            catch(SocketException e) {
+                wuff.write("400 bad request");
+            }
+            catch(Exception e) {
+                System.out.println(e);                 
             }
             wuff.close();
-            in.close();
-            out.close();
         }
     }
 }
