@@ -16,7 +16,7 @@ public class ConcHTTPAsk {
                 t.start();
             }
             catch(Exception e) {
-                System.out.println(e.toString());
+                // implement error handling
             }
         }
     }
