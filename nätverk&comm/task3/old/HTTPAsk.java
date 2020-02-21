@@ -35,7 +35,6 @@ public class HTTPAsk {
 
                     //öppna förbindelse till given hostname, port
                     String serverOutput = TCPClient.askServer(sHost, sPort, sString);      
-                    System.out.println(serverOutput); 
                     wuff.write(serverOutput);
                 } 
             }

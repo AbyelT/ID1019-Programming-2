@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class HTTPAsk2 {
     public static void main(String[] args) throws IOException {
@@ -11,32 +12,42 @@ public class HTTPAsk2 {
             Socket newClient = server.accept();
             BufferedReader buff = new BufferedReader(new InputStreamReader(newClient.getInputStream()));
             BufferedWriter wuff = new BufferedWriter(new OutputStreamWriter(newClient.getOutputStream()));
+            String sHost = "";
+            int sPort = 0;
+            String sQuery = null;
             try {
-                String request = buff.readLine();
-                request = request.substring(4, request.length());
-                request = "http://localhost:" + port + request;
-                URL theUrl = new URL(request);
-                String string = theUrl.getQuery();
-                if ((string = theUrl.getQuery()) != null) {
-                    String[] arry = string.split("[=?& ]");
-                    String sHost = arry[1];
-                    int sPort = Integer.parseInt(arry[3]);
-                    String sQuery = arry[5];
-                    String serverOutput = TCPClient.askServer(sHost, sPort, sQuery);
-                    wuff.write(serverOutput);
+                String request = URLDecoder.decode(buff.readLine(), StandardCharsets.UTF_8.name()); //makes sure all %20 is replaced with blankspace
+                request = request.substring(4, request.length());                                   //Remove the /GET
+                if (!request.substring(0, 5).equals("/ask?"))                                       //check if the HTTP request is valid
+                    throw new SocketException();
+                else {
+                    URL theUrl = new URL("http://localhost" + request);             //the URL constructor needs the protocol and hostname to work
+                    String[] arry = theUrl.getQuery().split("[=?&]");                                       
+                    if (!(arry[0].equals("hostname") && arry[2].equals("port"))) {             //checks if the given query is valid
+                        throw new Exception();
+                    } else {
+                        if(arry.length > 4) {   
+                            if(!arry[4].equals("string"))
+                                throw new Exception();
+                            else 
+                                sQuery = arry[5].split(" HTTP/1.1")[0];
+                        }
+                        sHost = arry[1];
+                        sPort = Integer.parseInt(arry[3]);
+                        String serverOutput = TCPClient.askServer(sHost, sPort, sQuery);
+                        wuff.write(serverOutput);
+                    }
                 }
-            } 
-            catch(UnknownHostException e) {
-                wuff.write("404 page not found");
-            }
-            catch(SocketTimeoutException e) {
-                wuff.write("408 connection timed out");
-            }
-            catch(SocketException e) {
-                wuff.write("400 bad request");
-            }
-            catch(Exception e) {
-                System.out.println(e);                 
+            } catch (ConnectException e) {
+                wuff.write("Cannot connect to server at " + sHost + ":" + sPort);
+            } catch (UnknownHostException e) {
+                wuff.write("Cannot find the host " + sHost);
+            } catch (SocketTimeoutException e) {
+                wuff.write("connection to " + sHost + " timed out");
+            } catch (SocketException e) {
+                wuff.write("HTTP 404 page not found");
+            } catch (Exception e) {
+                wuff.write("HTTP 400 bad request");
             }
             wuff.close();
         }

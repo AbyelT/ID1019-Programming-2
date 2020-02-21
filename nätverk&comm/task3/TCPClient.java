@@ -22,11 +22,10 @@ public class TCPClient {
         } else {
             String message;
             Socket mySocket;
-
             mySocket = new Socket(hostname, port);
             byte[] fromUser = ToServer.getBytes(StandardCharsets.UTF_8);
             byte[] fromServer = new byte[2048];
-            
+
             mySocket.getOutputStream().write(fromUser);
             mySocket.getOutputStream().write('\n');
             mySocket.setSoTimeout(3000);
@@ -34,7 +33,6 @@ public class TCPClient {
             int length = mySocket.getInputStream().read(fromServer);
             message = new String(fromServer, 0, length, StandardCharsets.UTF_8);
             mySocket.close();
-
             return message;
         }
     }
@@ -42,17 +40,13 @@ public class TCPClient {
     public static String askServer(String hostname, int port) throws IOException {
         byte[] fromServer = new byte[2048];
         String message;
-        try {
-            Socket mySocket = new Socket(hostname, port);
-            mySocket.setSoTimeout(3000);
-            int length = mySocket.getInputStream().read(fromServer);
 
-            message = new String(fromServer, 0, length, StandardCharsets.UTF_8);
-            mySocket.close();
+        Socket mySocket = new Socket(hostname, port);
+        mySocket.setSoTimeout(3000);
+        int length = mySocket.getInputStream().read(fromServer);
+        message = new String(fromServer, 0, length, StandardCharsets.UTF_8);
+        mySocket.close();
 
-        } catch (SocketException e) {
-            message = ("Connection to the host timed out");
-        }
         return message;
     }
 }
