@@ -33,7 +33,7 @@ public class HTTPAsk2 {
                                 sQuery = arry[5].split(" HTTP/1.1")[0];
                         }
                         sHost = arry[1];
-                        sPort = Integer.parseInt(arry[3]);
+                        sPort = Integer.parseInt(arry[3].split(" HTTP/1.1")[0]);
                         String serverOutput = TCPClient.askServer(sHost, sPort, sQuery);
                         wuff.write(serverOutput);
                     }
@@ -45,9 +45,9 @@ public class HTTPAsk2 {
             } catch (SocketTimeoutException e) {
                 wuff.write("connection to " + sHost + " timed out");
             } catch (SocketException e) {
-                wuff.write("HTTP 404 page not found");
+                wuff.write("HTTP/1.1 404 not found");
             } catch (Exception e) {
-                wuff.write("HTTP 400 bad request");
+                wuff.write("HTTP/1.1 400 bad request");
             }
             wuff.close();
         }

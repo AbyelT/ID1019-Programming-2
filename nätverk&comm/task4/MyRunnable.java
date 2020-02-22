@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class MyRunnable implements Runnable {
     private static Socket socket;
@@ -8,33 +9,52 @@ public class MyRunnable implements Runnable {
         this.socket = s;
     }
 
+    // makes sure all %20 is replaced with blankspace
     public void run() {
         try {
-            while (true) {
-                BufferedReader buff = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                BufferedWriter wuff = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                String sQuery;
+            serve();
+        } catch (IOException e) {
+            System.out.println(e.toString());
+        }
+    }
 
-                String request = buff.readLine();
+    private static void serve() throws IOException{
+        BufferedReader buff = null;
+        BufferedWriter wuff = null;
+        try {
+            while (true) {
+                buff = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                wuff = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                String sHost = "";
+                int sPort = 0;
+                String sQuery = null;
+
+                String request = URLDecoder.decode(buff.readLine(), StandardCharsets.UTF_8.name());
                 request = request.substring(4, request.length());
-                request = "http://localhost:" + socket.getPort() + request;
-                URL theUrl = new URL(request);
-                String string = theUrl.getQuery();
-                if ((string = theUrl.getQuery()) != null) {
-                    String[] arry = string.split("[=?& ]");
-                    String sHost = arry[1];
-                    int sPort = Integer.parseInt(arry[3]);
-                    if(arry.length > 5)
-                        sQuery = arry[5];
-                    else 
-                        sQuery = null;
-                    String serverOutput = TCPClient.askServer(sHost, sPort, sQuery);
-                    wuff.write(serverOutput);
+                if (!request.substring(0, 5).equals("/ask?")) // check if the HTTP request is valid
+                    throw new Exception("HTTP/1.1 404 page not found");
+                else {
+                    URL theUrl = new URL("http://localhost" + request);
+                    String[] arry = theUrl.getQuery().split("[=?&]");
+                    if (!(arry[0].equals("hostname") && arry[2].equals("port"))) { // checks if the given query is valid
+                        throw new Exception("HTTP/1.1 400 bad request");
+                    } else {
+                        if (arry.length > 4) {
+                            if (!arry[4].equals("string"))
+                                throw new Exception("HTTP/1.1 400 bad request");
+                            else
+                                sQuery = arry[5].split(" HTTP/1.1")[0];
+                        }
+                        sHost = arry[1];
+                        sPort = Integer.parseInt(arry[3].split(" HTTP/1.1")[0]);
+                        String serverOutput = TCPClient.askServer(sHost, sPort, sQuery);
+                        wuff.write(serverOutput);
+                    }
                 }
                 wuff.close();
             }
-        } catch (IOException e) {
-            //have a better exception handling
+        } catch (Exception e) {
+            wuff.write(e.toString());
         }
     }
 }

@@ -1,5 +1,21 @@
 defmodule Rudy do
 
+  def start(port) do
+    Process.register(spawn(fn -> init(port) end), :one)
+    Process.register(spawn(fn -> init(port) end), :two)
+    Process.register(spawn(fn -> init(port) end), :three)
+    Process.register(spawn(fn -> init(port) end), :four)
+    Process.register(spawn(fn -> init(port) end), :five) 
+  end
+
+  def stop() do
+    Process.exit(Process.whereis(:one), "Time to die!")
+    Process.exit(Process.whereis(:two), "Time to die!")
+    Process.exit(Process.whereis(:three), "Time to die!")
+    Process.exit(Process.whereis(:four), "Time to die!")
+    Process.exit(Process.whereis(:five), "Time to die!")
+  end
+    
   def init(port) do
     opt = [:list, active: false, reuseaddr: true]
 
@@ -17,8 +33,10 @@ defmodule Rudy do
     case :gen_tcp.accept(listen) do
       {:ok, client} ->
         request(client)
+        handler(listen)
       {:error, error} ->
-        error
+        :timer.sleep(100)
+        handler(listen)
     end
   end
 
@@ -36,15 +54,7 @@ defmodule Rudy do
   end
 
   def reply({{:get, uri, _}, _, _}) do
+    :timer.sleep(10)
     HTTP.ok("Hello!")
   end
-
-  def start(port) do
-    Process.register(spawn(fn -> init(port) end), :rudy)
-  end
-
-  def stop() do
-    Process.exit(Process.whereis(:rudy), "Time to die!")
-  end
-
 end
