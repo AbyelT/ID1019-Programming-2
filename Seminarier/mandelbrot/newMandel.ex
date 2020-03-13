@@ -1,3 +1,0 @@
-defmodule NewMandel do
-    
-end

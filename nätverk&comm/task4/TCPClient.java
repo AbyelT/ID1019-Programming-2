@@ -22,19 +22,15 @@ public class TCPClient {
         } else {
             String message;
             Socket mySocket;
-
             mySocket = new Socket(hostname, port);
             byte[] fromUser = ToServer.getBytes(StandardCharsets.UTF_8);
             byte[] fromServer = new byte[2048];
-            
+
             mySocket.getOutputStream().write(fromUser);
             mySocket.getOutputStream().write('\n');
-            mySocket.setSoTimeout(3000);
-
             int length = mySocket.getInputStream().read(fromServer);
             message = new String(fromServer, 0, length, StandardCharsets.UTF_8);
             mySocket.close();
-
             return message;
         }
     }
@@ -42,26 +38,11 @@ public class TCPClient {
     public static String askServer(String hostname, int port) throws IOException {
         byte[] fromServer = new byte[2048];
         String message;
-        try {
-            Socket mySocket = new Socket(hostname, port);
-            mySocket.setSoTimeout(3000);
-            int length = mySocket.getInputStream().read(fromServer);
+        Socket mySocket = new Socket(hostname, port);
+        int length = mySocket.getInputStream().read(fromServer);
 
-            message = new String(fromServer, 0, length, StandardCharsets.UTF_8);
-            mySocket.close();
-
-        } catch (SocketException e) {
-            message = ("Connection to the host timed out");
-        }
+        message = new String(fromServer, 0, length, StandardCharsets.UTF_8);
+        mySocket.close();
         return message;
     }
 }
-
-/*
- * abstract
- * 
- * while (i < length && fromServer[i] != -1) { sb.append((char)fromServer[i++]);
- * } //String s = new String(sb.toString(), StandardCharsets.UTF_8);
- * //StringBuilder sb = new StringBuilder();
- * 
- */

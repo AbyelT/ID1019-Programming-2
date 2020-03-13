@@ -32,7 +32,9 @@ defmodule Rudy do
   def handler(listen) do
     case :gen_tcp.accept(listen) do
       {:ok, client} ->
-        request(client)
+        #request(client)
+        spawn(fn() -> request(client) end)
+        #spawn(fn() -> handler(listen) end)
         handler(listen)
       {:error, error} ->
         :timer.sleep(100)

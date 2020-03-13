@@ -9,7 +9,7 @@ defmodule Lists do
     @doc "Returns the tail of a list
      "
     def drp([]) do IO.puts "empty list" end
-    def drp([h|_t]) do
+    def drp([_h|t]) do
         t            
     end
 
@@ -31,9 +31,8 @@ defmodule Lists do
      @doc "duplicates every element on a given list, if it's not empty
      "
     def duplicate([]) do [] end
-    def duplicate(l) do
-        [hd(l), hd(l)|duplicate(tl(l))]
-        [l|l]
+    def duplicate([h|tl]) do
+        [h, h|duplicate(tl)]
     end
 
     @doc "Adds a given element to the list, if its not on the list
@@ -75,4 +74,6 @@ defmodule Lists do
     def reverse([h|t], r) do 
         reverse(t, [h|r]) 
     end
+
+    
 end

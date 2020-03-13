@@ -48,9 +48,9 @@ defmodule Sorting do
     def merge(e1, e2) do
         cond do
         hd(e1) < hd(e2) ->
-            merge( insrt(hd(e2),e1), tl(e2)) 
+            merge(insrt(hd(e2),e1), tl(e2)) 
         true ->
-            merge( tl(e1), insrt(hd(e1),e2)) 
+            merge(tl(e1), insrt(hd(e1),e2)) 
         end
     end
 

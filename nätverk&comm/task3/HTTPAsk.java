@@ -2,11 +2,12 @@ import java.net.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-public class HTTPAsk2 {
+public class HTTPAsk {
     public static void main(String[] args) throws IOException {
         int port = Integer.parseInt(args[0]);
         ServerSocket server = new ServerSocket(port);
         System.out.println("Running server, port: " + port);
+        String httpOK = "HTTP/1.1 200 OK\r\nContent-Type: text/plain; Charset=utf-8\r\n\r\n";
 
         while (true) {
             Socket newClient = server.accept();
@@ -35,19 +36,19 @@ public class HTTPAsk2 {
                         sHost = arry[1];
                         sPort = Integer.parseInt(arry[3].split(" HTTP/1.1")[0]);
                         String serverOutput = TCPClient.askServer(sHost, sPort, sQuery);
-                        wuff.write(serverOutput);
+                        wuff.write(httpOK + serverOutput);
                     }
                 }
             } catch (ConnectException e) {
-                wuff.write("Cannot connect to server at " + sHost + ":" + sPort);
+                wuff.write("HTTP/1.1 200 OK\r\n\r\nCannot connect to server at " + sHost + ":" + sPort);
             } catch (UnknownHostException e) {
-                wuff.write("Cannot find the host " + sHost);
+                wuff.write("HTTP/1.1 200 OK\r\n\r\nCannot find the host " + sHost);
             } catch (SocketTimeoutException e) {
-                wuff.write("connection to " + sHost + " timed out");
+                wuff.write("HTTP/1.1 408 request timeout\r\n\r\nconnection to " + sHost + " timed out");
             } catch (SocketException e) {
-                wuff.write("HTTP/1.1 404 not found");
+                wuff.write("HTTP/1.1 404 not found\r\n\r\n404 not found");
             } catch (Exception e) {
-                wuff.write("HTTP/1.1 400 bad request");
+                wuff.write("HTTP/1.1 400 bad request\r\n\r\n400 bad request");
             }
             wuff.close();
         }
